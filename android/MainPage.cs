@@ -358,17 +358,6 @@ public sealed class MainPage : ContentPage
             return;
         }
 
-#if !DEBUG
-        if (uri.Scheme != Uri.UriSchemeHttps)
-        {
-            await DisplayAlertAsync(
-                AppStrings.Get("HttpsRequiredTitle"),
-                AppStrings.Get("HttpsRequiredMessage"),
-                AppStrings.Get("Ok"));
-            return;
-        }
-#endif
-
         downloadButton.IsEnabled = false;
         filterCancellation?.Cancel();
         statusLabel.Text = AppStrings.Get("Downloading");

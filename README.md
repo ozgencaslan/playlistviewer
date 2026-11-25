@@ -51,7 +51,7 @@ dotnet build .\android\PlaylistViewer.Android.csproj -c Release
 dotnet publish .\android\PlaylistViewer.Android.csproj -c Release -p:AndroidPackageFormats=apk
 ```
 
-Debug-Builds unterstützen HTTP für lokale Testserver. Release-Builds und die Google-Play-Version verlangen HTTPS für Playlists und Streams. HTTPS ist auch für private Server empfohlen, da HTTP Zugangsdaten und Tokens unverschlüsselt überträgt.
+Debug-, Release- und Google-Play-Builds unterstützen HTTP und HTTPS für Playlist-URLs. Stream-URLs müssen in Release- und Google-Play-Builds weiterhin HTTPS verwenden. HTTP überträgt URLs, Zugangsdaten und Inhalte unverschlüsselt und sollte nur in vertrauenswürdigen Netzwerken verwendet werden.
 
 Für den lokalen HTTPS-Server `192.168.0.47` akzeptiert die Android-App ein sonst ungültiges Zertifikat nur, wenn dessen SHA-256-Fingerabdruck exakt dem in `MainPage.cs` hinterlegten Pin entspricht. Bei einem Zertifikatswechsel muss dieser Pin aktualisiert werden; die Zertifikatsprüfung für andere Hosts bleibt unverändert.
 

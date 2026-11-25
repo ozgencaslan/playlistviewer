@@ -12,8 +12,6 @@
     <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
-    <AndroidManifestPlaceholders Condition="'$(AndroidManifestPlaceholders)' == '' and '$(Configuration)' == 'Debug'">usesCleartextTraffic=true</AndroidManifestPlaceholders>
-    <AndroidManifestPlaceholders Condition="'$(AndroidManifestPlaceholders)' == '' and '$(Configuration)' != 'Debug'">usesCleartextTraffic=false</AndroidManifestPlaceholders>
   </PropertyGroup>
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#2067B2" />
