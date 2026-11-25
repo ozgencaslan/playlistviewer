@@ -9,4 +9,7 @@
     <AssemblyName>PlaylistViewer</AssemblyName>
     <RootNamespace>PlaylistViewer</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="android\**\*.cs" />
+  </ItemGroup>
 </Project>

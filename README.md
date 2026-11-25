@@ -42,6 +42,17 @@ dotnet publish .\PlaylistViewer.csproj -c Release -r win-x64 --self-contained tr
 
 Die veröffentlichte EXE ist selbstständig ausführbar. Build-Ausgaben, lokale IDE-Dateien und `publish` werden durch `.gitignore` nicht in normale Git-Commits aufgenommen.
 
+## Android-App
+
+Das Android-Projekt befindet sich unter `android` und unterstützt Suche, Gruppen- und Serienfilter, Spaltensortierung, Wertfilter, URL-Kopieren, externe Stream-Wiedergabe und das Teilen/Speichern der M3U-Datei. Es benötigt das .NET-10-Android-Workload sowie ein eingerichtetes Android-SDK und Java-JDK. Das Workload lässt sich mit `dotnet workload install maui-android` installieren.
+
+```powershell
+dotnet build .\android\PlaylistViewer.Android.csproj -c Release
+dotnet publish .\android\PlaylistViewer.Android.csproj -c Release -p:AndroidPackageFormats=apk
+```
+
+Auf Android wird die Stream-URL an eine installierte kompatible App übergeben. **M3U teilen/speichern** öffnet die Android-Teilen-Oberfläche, über die eine Speicher-App ausgewählt werden kann.
+
 ## Versionshistorie
 
 Änderungen pro Version stehen in [CHANGELOG.md](CHANGELOG.md). Die Versionsnummer wird in `PlaylistViewer.csproj` gepflegt.
