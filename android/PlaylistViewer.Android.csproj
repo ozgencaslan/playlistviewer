@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-android</TargetFramework>
+    <TargetFramework>net10.0-android36.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>PlaylistViewer.Android</RootNamespace>
     <UseMaui>true</UseMaui>
@@ -12,6 +12,8 @@
     <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+    <AndroidManifestPlaceholders Condition="'$(AndroidManifestPlaceholders)' == '' and '$(Configuration)' == 'Debug'">usesCleartextTraffic=true</AndroidManifestPlaceholders>
+    <AndroidManifestPlaceholders Condition="'$(AndroidManifestPlaceholders)' == '' and '$(Configuration)' != 'Debug'">usesCleartextTraffic=false</AndroidManifestPlaceholders>
   </PropertyGroup>
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#2067B2" />
@@ -20,4 +22,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
     <Compile Include="..\M3uParser.cs" Link="M3uParser.cs" />
   </ItemGroup>
+  <Target Name="ValidateGooglePlaySigningSettings" BeforeTargets="PrepareForBuild" Condition="'$(AndroidStoreBuild)' == 'true'">
+    <Error Condition="'$(AndroidSigningKeyStore)' == ''" Text="Set PLAY_STORE_KEYSTORE_PATH to your upload keystore before publishing the Google Play profile." />
+    <Error Condition="'$(AndroidSigningKeyAlias)' == ''" Text="Set PLAY_STORE_KEY_ALIAS before publishing the Google Play profile." />
+    <Error Condition="'$(AndroidSigningStorePass)' == ''" Text="Set PLAY_STORE_STORE_PASSWORD before publishing the Google Play profile." />
+    <Error Condition="'$(AndroidSigningKeyPass)' == ''" Text="Set PLAY_STORE_KEY_PASSWORD before publishing the Google Play profile." />
+    <Error Condition="'$(AndroidSigningKeyStore)' != '' and !Exists('$(AndroidSigningKeyStore)')" Text="The configured Google Play upload keystore was not found." />
+  </Target>
 </Project>

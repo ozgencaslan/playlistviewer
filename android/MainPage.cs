@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
@@ -12,50 +14,78 @@ namespace PlaylistViewer.Android;
 
 public sealed class MainPage : ContentPage
 {
-    private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(60) };
+    private const string LocalServerHost = "192.168.0.47";
+    private const string LocalServerCertificateSha256 = "AB08D132D6BF0A40D4640692478AC06116C67A763868FA2E9FD2609586D30F2E";
+    private static readonly HttpClient HttpClient = CreateHttpClient();
     private static readonly Regex EpisodeTitleRegex = new(
         @"^(?<series>.+?)[\s._-]+[sS](?<season>[0-9]{1,2})[\s._-]*[eE](?<episode>[0-9]{1,3})$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    private const string AllGroups = "(Alle Gruppen)";
+    private static readonly string AllGroups = AppStrings.Get("GroupAll");
     private const string LastPlaylistUrlKey = "last-playlist-url";
     private static readonly string[] ColumnNames = ["Name", "Title", "Group", "Id", "Url"];
     private static readonly SortOption[] SortOptions =
     [
-        new("Originalreihenfolge", null, true),
-        new("Name A-Z", "Name", true),
-        new("Name Z-A", "Name", false),
-        new("Titel A-Z", "Title", true),
-        new("Titel Z-A", "Title", false),
-        new("Gruppe A-Z", "Group", true),
-        new("Gruppe Z-A", "Group", false),
-        new("TVG-ID A-Z", "Id", true),
-        new("TVG-ID Z-A", "Id", false),
-        new("Stream-URL A-Z", "Url", true),
-        new("Stream-URL Z-A", "Url", false),
+        new(AppStrings.Get("SortOriginal"), null, true),
+        new(AppStrings.Get("SortNameAscending"), "Name", true),
+        new(AppStrings.Get("SortNameDescending"), "Name", false),
+        new(AppStrings.Get("SortTitleAscending"), "Title", true),
+        new(AppStrings.Get("SortTitleDescending"), "Title", false),
+        new(AppStrings.Get("SortGroupAscending"), "Group", true),
+        new(AppStrings.Get("SortGroupDescending"), "Group", false),
+        new(AppStrings.Get("SortIdAscending"), "Id", true),
+        new(AppStrings.Get("SortIdDescending"), "Id", false),
+        new(AppStrings.Get("SortUrlAscending"), "Url", true),
+        new(AppStrings.Get("SortUrlDescending"), "Url", false),
     ];
+
+    private static HttpClient CreateHttpClient()
+    {
+#if ANDROID
+        var handler = new Xamarin.Android.Net.AndroidMessageHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, _, errors) =>
+            {
+                if (errors == System.Net.Security.SslPolicyErrors.None)
+                    return true;
+
+                if (!string.Equals(message?.RequestUri?.Host, LocalServerHost, StringComparison.Ordinal)
+                    || cert is null)
+                    return false;
+
+                var certificateHash = SHA256.HashData(cert.GetRawCertData());
+                return CryptographicOperations.FixedTimeEquals(
+                    certificateHash,
+                    Convert.FromHexString(LocalServerCertificateSha256));
+            },
+        };
+        return new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(60) };
+#else
+        return new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+#endif
+    }
 
     private readonly Entry urlEntry = new()
     {
-        Placeholder = "https://beispiel.de/playlist.m3u",
+        Placeholder = AppStrings.Get("UrlPlaceholder"),
         Keyboard = Keyboard.Url,
         ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
     };
     private readonly Entry searchEntry = new()
     {
-        Placeholder = "Name, Titel, Gruppe, ID oder Stream-URL suchen",
+        Placeholder = AppStrings.Get("SearchPlaceholder"),
         ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
     };
-    private readonly Picker groupPicker = new() { Title = "Gruppe auswählen" };
-    private readonly Picker groupColumnPicker = new() { Title = "Gruppieren nach" };
-    private readonly Picker sortPicker = new() { Title = "Sortieren" };
-    private readonly Picker filterColumnPicker = new() { Title = "Werte filtern" };
+    private readonly Picker groupPicker = new() { Title = AppStrings.Get("ChooseGroup") };
+    private readonly Picker groupColumnPicker = new() { Title = AppStrings.Get("GroupBy") };
+    private readonly Picker sortPicker = new() { Title = AppStrings.Get("SortBy") };
+    private readonly Picker filterColumnPicker = new() { Title = AppStrings.Get("FilterByValue") };
     private readonly Microsoft.Maui.Controls.Switch episodeGroupingSwitch = new();
-    private readonly Button downloadButton = new() { Text = "Herunterladen" };
-    private readonly Button shareButton = new() { Text = "M3U teilen/speichern", IsEnabled = false };
-    private readonly Button valueFilterButton = new() { Text = "Werte auswählen" };
+    private readonly Button downloadButton = new() { Text = AppStrings.Get("Download") };
+    private readonly Button shareButton = new() { Text = AppStrings.Get("SharePlaylist"), IsEnabled = false };
+    private readonly Button valueFilterButton = new() { Text = AppStrings.Get("ChooseValues") };
     private readonly Label statusLabel = new()
     {
-        Text = "Playlist-URL eingeben und herunterladen.",
+        Text = AppStrings.Get("InitialStatus"),
         FontSize = 12,
         TextColor = Colors.DimGray,
     };
@@ -81,14 +111,14 @@ public sealed class MainPage : ContentPage
 
     public MainPage()
     {
-        Title = "Playlist Viewer";
+        Title = AppStrings.Get("AppTitle");
         Padding = new Thickness(14, 8);
 
         urlEntry.Text = Preferences.Get(LastPlaylistUrlKey, string.Empty);
         groupPicker.Items.Add(AllGroups);
         groupPicker.SelectedIndex = 0;
-        groupColumnPicker.Items.Add("Keine Gruppierung");
-        filterColumnPicker.Items.Add("Spalte auswählen");
+        groupColumnPicker.Items.Add(AppStrings.Get("NoGrouping"));
+        filterColumnPicker.Items.Add(AppStrings.Get("ChooseColumn"));
         foreach (var columnName in ColumnNames)
         {
             var label = GetColumnLabel(columnName);
@@ -170,7 +200,7 @@ public sealed class MainPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             Children =
             {
-                new Label { Text = "Serien gruppieren", VerticalOptions = LayoutOptions.Center },
+                new Label { Text = AppStrings.Get("GroupEpisodes"), VerticalOptions = LayoutOptions.Center },
                 episodeGroupingSwitch,
             },
         }, 1, 0);
@@ -217,7 +247,7 @@ public sealed class MainPage : ContentPage
         };
         layout.Add(new Label
         {
-            Text = "Playlist Viewer",
+            Text = AppStrings.Get("AppTitle"),
             FontSize = 23,
             FontAttributes = FontAttributes.Bold,
         }, 0, 0);
@@ -258,7 +288,7 @@ public sealed class MainPage : ContentPage
 
         var copyButton = new Button
         {
-            Text = "URL kopieren",
+            Text = AppStrings.Get("CopyUrl"),
             FontSize = 12,
             Padding = new Thickness(8, 4),
             VerticalOptions = LayoutOptions.Center,
@@ -321,13 +351,27 @@ public sealed class MainPage : ContentPage
         if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            await DisplayAlertAsync("Ungültige URL", "Bitte gib eine gültige HTTP- oder HTTPS-URL ein.", "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("InvalidUrlTitle"),
+                AppStrings.Get("InvalidUrlMessage"),
+                AppStrings.Get("Ok"));
             return;
         }
 
+#if !DEBUG
+        if (uri.Scheme != Uri.UriSchemeHttps)
+        {
+            await DisplayAlertAsync(
+                AppStrings.Get("HttpsRequiredTitle"),
+                AppStrings.Get("HttpsRequiredMessage"),
+                AppStrings.Get("Ok"));
+            return;
+        }
+#endif
+
         downloadButton.IsEnabled = false;
         filterCancellation?.Cancel();
-        statusLabel.Text = "Playlist wird heruntergeladen …";
+        statusLabel.Text = AppStrings.Get("Downloading");
         var stopwatch = Stopwatch.StartNew();
         try
         {
@@ -350,35 +394,55 @@ public sealed class MainPage : ContentPage
             shareButton.IsEnabled = true;
             PopulateGroups();
             Preferences.Set(LastPlaylistUrlKey, address);
-            statusLabel.Text = $"Geladen: {entries.Count:N0} Einträge, {GetGroupCount():N0} Gruppen.";
+            statusLabel.Text = AppStrings.Format("LoadedStatus", entries.Count, GetGroupCount());
             await ApplyFiltersAsync();
         }
         catch (HttpRequestException ex)
         {
-            statusLabel.Text = "Download fehlgeschlagen.";
-            await DisplayAlertAsync("Download fehlgeschlagen", $"Die Playlist konnte nicht heruntergeladen werden.\n\n{ex.Message}", "OK");
+            statusLabel.Text = AppStrings.Get("DownloadFailedStatus");
+            await DisplayAlertAsync(
+                AppStrings.Get("DownloadFailedTitle"),
+                AppStrings.Format("DownloadFailedMessage", ex.Message),
+                AppStrings.Get("Ok"));
+        }
+        catch (WebException ex)
+        {
+            statusLabel.Text = AppStrings.Get("DownloadFailedStatus");
+            await DisplayAlertAsync(
+                AppStrings.Get("DownloadFailedTitle"),
+                AppStrings.Format("DownloadFailedMessage", ex.Message),
+                AppStrings.Get("Ok"));
         }
         catch (TaskCanceledException ex)
         {
-            statusLabel.Text = "Download abgebrochen oder Zeitüberschreitung.";
-            await DisplayAlertAsync("Download fehlgeschlagen", $"Der Download wurde abgebrochen oder hat zu lange gedauert.\n\n{ex.Message}", "OK");
+            statusLabel.Text = AppStrings.Get("DownloadTimeoutStatus");
+            await DisplayAlertAsync(
+                AppStrings.Get("DownloadFailedTitle"),
+                AppStrings.Format("DownloadTimeoutMessage", ex.Message),
+                AppStrings.Get("Ok"));
         }
         catch (IOException ex)
         {
-            statusLabel.Text = "Playlist konnte nicht verarbeitet werden.";
-            await DisplayAlertAsync("Lesefehler", $"Die Playlist konnte nicht gelesen werden.\n\n{ex.Message}", "OK");
+            statusLabel.Text = AppStrings.Get("ProcessingFailedStatus");
+            await DisplayAlertAsync(
+                AppStrings.Get("ReadErrorTitle"),
+                AppStrings.Format("ReadErrorMessage", ex.Message),
+                AppStrings.Get("Ok"));
         }
         catch (ArgumentException ex)
         {
-            statusLabel.Text = "Playlist konnte nicht verarbeitet werden.";
-            await DisplayAlertAsync("Ungültige Playlist", $"Die Playlist enthält ungültige Metadaten.\n\n{ex.Message}", "OK");
+            statusLabel.Text = AppStrings.Get("ProcessingFailedStatus");
+            await DisplayAlertAsync(
+                AppStrings.Get("InvalidPlaylistTitle"),
+                AppStrings.Format("InvalidPlaylistMessage", ex.Message),
+                AppStrings.Get("Ok"));
         }
         finally
         {
             downloadButton.IsEnabled = true;
             stopwatch.Stop();
             if (playlistContent is not null)
-                statusLabel.Text += $" Dauer: {stopwatch.Elapsed.TotalSeconds:0.00} s";
+                statusLabel.Text += AppStrings.Format("DownloadDuration", stopwatch.Elapsed.TotalSeconds);
         }
     }
 
@@ -408,11 +472,11 @@ public sealed class MainPage : ContentPage
 
     private static string GetColumnLabel(string columnName) => columnName switch
     {
-        "Name" => "Name",
-        "Title" => "Titel",
-        "Group" => "Gruppe",
-        "Id" => "TVG-ID",
-        "Url" => "Stream-URL",
+        "Name" => AppStrings.Get("ColumnName"),
+        "Title" => AppStrings.Get("ColumnTitle"),
+        "Group" => AppStrings.Get("ColumnGroup"),
+        "Id" => AppStrings.Get("ColumnId"),
+        "Url" => AppStrings.Get("ColumnUrl"),
         _ => columnName,
     };
 
@@ -428,14 +492,17 @@ public sealed class MainPage : ContentPage
 
     private void UpdateFilterButtonText() =>
         valueFilterButton.Text = columnFilters.Count == 0
-            ? "Werte auswählen"
-            : $"Filter aktiv ({columnFilters.Count})";
+            ? AppStrings.Get("ChooseValues")
+            : AppStrings.Format("ChooseValuesActive", columnFilters.Count);
 
     private async Task ShowColumnFilterAsync()
     {
         if (filterColumnPicker.SelectedIndex <= 0)
         {
-            await DisplayAlertAsync("Spalte auswählen", "Wähle zuerst eine Spalte für den Filter.", "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("ChooseColumnTitle"),
+                AppStrings.Get("ChooseColumnMessage"),
+                AppStrings.Get("Ok"));
             return;
         }
 
@@ -447,7 +514,10 @@ public sealed class MainPage : ContentPage
             .ToArray();
         if (values.Length == 0)
         {
-            await DisplayAlertAsync("Keine Filterwerte", "Lade zuerst eine Playlist mit Einträgen.", "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("NoFilterValuesTitle"),
+                AppStrings.Get("NoFilterValuesMessage"),
+                AppStrings.Get("Ok"));
             return;
         }
 
@@ -456,15 +526,15 @@ public sealed class MainPage : ContentPage
             : new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
         var filterPage = new ColumnValueFilterPage(GetColumnLabel(columnName), values, selectedValues);
         await Navigation.PushModalAsync(filterPage);
-        await Navigation.PopModalAsync();
+        var result = await filterPage.Result;
 
-        if (filterPage.SelectedValues is null)
+        if (result is null)
             return;
 
-        if (filterPage.SelectedValues.Count == values.Length)
+        if (result.Count == values.Length)
             columnFilters.Remove(columnName);
         else
-            columnFilters[columnName] = filterPage.SelectedValues;
+            columnFilters[columnName] = result;
 
         UpdateFilterButtonText();
         ScheduleFiltering();
@@ -509,7 +579,7 @@ public sealed class MainPage : ContentPage
             StringComparer.Ordinal);
         var activeSort = sortOption;
         var activeGroupColumn = groupColumnName;
-        statusLabel.Text = "Filter wird angewendet …";
+        statusLabel.Text = AppStrings.Get("Filtering");
 
         var result = await Task.Run(
             () => BuildVisibleRows(source, query, selectedGroup, groupEpisodes, expanded, filters, activeSort, activeGroupColumn, cancellationToken),
@@ -520,7 +590,7 @@ public sealed class MainPage : ContentPage
         foreach (var row in result.Rows)
             visibleRows.Add(row);
 
-        statusLabel.Text = $"{result.EntryCount:N0} von {entries.Count:N0} Einträgen sichtbar.";
+        statusLabel.Text = AppStrings.Format("VisibleEntries", result.EntryCount, entries.Count);
     }
 
     private static (List<PlaylistRow> Rows, int EntryCount) BuildVisibleRows(
@@ -567,7 +637,7 @@ public sealed class MainPage : ContentPage
                 cancellationToken.ThrowIfCancellationRequested();
                 var groupEntries = SortEntries(group, sort);
                 rows.Add(PlaylistRow.ForColumnGroup(
-                    string.IsNullOrEmpty(group.Key) ? "(Leer)" : group.Key,
+                    string.IsNullOrEmpty(group.Key) ? AppStrings.Get("EmptyValue") : group.Key,
                     groupEntries.Count));
                 rows.AddRange(groupEntries.Select(entry => PlaylistRow.ForEntry(entry, entry.Name)));
             }
@@ -648,29 +718,49 @@ public sealed class MainPage : ContentPage
     {
         if (!Uri.TryCreate(entry.Url, UriKind.Absolute, out var uri))
         {
-            await DisplayAlertAsync("Ungültige Stream-URL", "Dieser Eintrag enthält keine gültige absolute URL.", "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("InvalidStreamUrlTitle"),
+                AppStrings.Get("InvalidStreamUrlMessage"),
+                AppStrings.Get("Ok"));
             return;
         }
+
+#if !DEBUG
+        if (uri.Scheme != Uri.UriSchemeHttps)
+        {
+            await DisplayAlertAsync(
+                AppStrings.Get("HttpsRequiredTitle"),
+                AppStrings.Get("HttpsRequiredMessage"),
+                AppStrings.Get("Ok"));
+            return;
+        }
+#endif
 
         try
         {
             await Launcher.Default.OpenAsync(uri);
-            statusLabel.Text = $"Stream geöffnet: {entry.Name}";
+            statusLabel.Text = AppStrings.Format("StreamOpened", entry.Name);
         }
         catch (FeatureNotSupportedException ex)
         {
-            await DisplayAlertAsync("Wiedergabe nicht verfügbar", $"Für diesen Stream wurde keine passende Android-App gefunden.\n\n{ex.Message}", "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("PlaybackUnavailableTitle"),
+                AppStrings.Format("PlaybackUnavailableMessage", ex.Message),
+                AppStrings.Get("Ok"));
         }
         catch (InvalidOperationException ex)
         {
-            await DisplayAlertAsync("Wiedergabe fehlgeschlagen", ex.Message, "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("PlaybackFailedTitle"),
+                ex.Message,
+                AppStrings.Get("Ok"));
         }
     }
 
     private async Task CopyStreamUrlAsync(M3uEntry entry)
     {
         await Clipboard.Default.SetTextAsync(entry.Url);
-        statusLabel.Text = "Stream-URL kopiert.";
+        statusLabel.Text = AppStrings.Get("UrlCopied");
     }
 
     private async Task SharePlaylistAsync()
@@ -687,16 +777,22 @@ public sealed class MainPage : ContentPage
             var path = Path.Combine(FileSystem.CacheDirectory, $"playlist{extension}");
             await File.WriteAllTextAsync(path, playlistContent, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             await Share.Default.RequestAsync(new ShareFileRequest(
-                "M3U-Playlist teilen oder speichern",
+                AppStrings.Get("ShareTitle"),
                 new ShareFile(path)));
         }
         catch (FeatureNotSupportedException ex)
         {
-            await DisplayAlertAsync("Teilen nicht verfügbar", ex.Message, "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("ShareUnavailableTitle"),
+                ex.Message,
+                AppStrings.Get("Ok"));
         }
         catch (IOException ex)
         {
-            await DisplayAlertAsync("Speicherfehler", $"Die Playlist konnte nicht vorbereitet werden.\n\n{ex.Message}", "OK");
+            await DisplayAlertAsync(
+                AppStrings.Get("StorageErrorTitle"),
+                AppStrings.Format("StorageErrorMessage", ex.Message),
+                AppStrings.Get("Ok"));
         }
     }
 
@@ -721,10 +817,14 @@ public sealed class MainPage : ContentPage
             new(entry, displayTitle, string.Join(" · ", new[] { entry.Title, entry.Group, entry.Id }.Where(value => !string.IsNullOrWhiteSpace(value))));
 
         public static PlaylistRow ForSeries(string name, int count, bool expanded) =>
-            new(null, $"{(expanded ? "▼" : "▶")} {name} ({count:N0})", "Serie antippen, um Episoden ein- oder auszublenden.", name);
+            new(
+                null,
+                $"{(expanded ? "▼" : "▶")} {name} ({count:N0})",
+                AppStrings.Get("SeriesCollapsedDetail"),
+                name);
 
         public static PlaylistRow ForColumnGroup(string name, int count) =>
-            new(null, $"{name} ({count:N0})", "Gruppierte Einträge");
+            new(null, $"{name} ({count:N0})", AppStrings.Get("GroupedEntriesDetail"));
     }
 
     private readonly record struct SortOption(string Label, string? ColumnName, bool Ascending);
@@ -733,18 +833,20 @@ public sealed class MainPage : ContentPage
     {
         private readonly ObservableCollection<FilterValueOption> visibleValues = [];
         private readonly FilterValueOption[] allValues;
-        private readonly SearchBar searchBar = new() { Placeholder = "Werte suchen …" };
+        private readonly TaskCompletionSource<HashSet<string>?> result =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly SearchBar searchBar = new() { Placeholder = AppStrings.Get("FilterSearchPlaceholder") };
         private readonly CollectionView valueList = new()
         {
             SelectionMode = SelectionMode.None,
             ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
         };
 
-        public HashSet<string>? SelectedValues { get; private set; }
+        public Task<HashSet<string>?> Result => result.Task;
 
         public ColumnValueFilterPage(string columnName, IReadOnlyList<string> values, HashSet<string> selectedValues)
         {
-            Title = $"Filter: {columnName}";
+            Title = AppStrings.Format("FilterTitle", columnName);
             allValues = values.Select(value => new FilterValueOption(
                 value,
                 selectedValues.Contains(value))).ToArray();
@@ -752,20 +854,20 @@ public sealed class MainPage : ContentPage
             valueList.ItemTemplate = new DataTemplate(CreateValueRow);
             searchBar.TextChanged += (_, _) => RefreshValues();
 
-            var selectAllButton = new Button { Text = "Alle auswählen" };
+            var selectAllButton = new Button { Text = AppStrings.Get("SelectAll") };
             selectAllButton.Clicked += (_, _) => SetVisibleValuesSelected(true);
-            var selectNoneButton = new Button { Text = "Keine auswählen" };
+            var selectNoneButton = new Button { Text = AppStrings.Get("SelectNone") };
             selectNoneButton.Clicked += (_, _) => SetVisibleValuesSelected(false);
-            var applyButton = new Button { Text = "Anwenden" };
+            var applyButton = new Button { Text = AppStrings.Get("Apply") };
             applyButton.Clicked += async (_, _) =>
             {
-                SelectedValues = new HashSet<string>(
+                var selected = new HashSet<string>(
                     allValues.Where(value => value.IsSelected).Select(value => value.Value),
                     StringComparer.OrdinalIgnoreCase);
-                await Navigation.PopModalAsync();
+                await CloseAsync(selected);
             };
-            var cancelButton = new Button { Text = "Abbrechen" };
-            cancelButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
+            var cancelButton = new Button { Text = AppStrings.Get("Cancel") };
+            cancelButton.Clicked += async (_, _) => await CloseAsync(null);
 
             var selectionButtons = new Grid
             {
@@ -817,6 +919,18 @@ public sealed class MainPage : ContentPage
             RefreshValues();
         }
 
+        protected override void OnDisappearing()
+        {
+            result.TrySetResult(null);
+            base.OnDisappearing();
+        }
+
+        private async Task CloseAsync(HashSet<string>? selectedValues)
+        {
+            result.TrySetResult(selectedValues);
+            await Navigation.PopModalAsync();
+        }
+
         private View CreateValueRow()
         {
             var checkBox = new CheckBox();
@@ -864,7 +978,7 @@ public sealed class MainPage : ContentPage
         }
 
         public string Value { get; }
-        public string DisplayValue => string.IsNullOrEmpty(Value) ? "(Leer)" : Value;
+        public string DisplayValue => string.IsNullOrEmpty(Value) ? AppStrings.Get("EmptyValue") : Value;
 
         public bool IsSelected
         {

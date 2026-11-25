@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>Playlist Viewer</value></data>
+  <data name="UrlPlaceholder" xml:space="preserve"><value>https://example.com/playlist.m3u</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Search name, title, group, ID, or stream URL</value></data>
+  <data name="ChooseGroup" xml:space="preserve"><value>Select group</value></data>
+  <data name="GroupBy" xml:space="preserve"><value>Group by</value></data>
+  <data name="SortBy" xml:space="preserve"><value>Sort by</value></data>
+  <data name="FilterByValue" xml:space="preserve"><value>Filter values</value></data>
+  <data name="Download" xml:space="preserve"><value>Download</value></data>
+  <data name="SharePlaylist" xml:space="preserve"><value>Share/save M3U</value></data>
+  <data name="ChooseValues" xml:space="preserve"><value>Choose values</value></data>
+  <data name="ChooseValuesActive" xml:space="preserve"><value>Filter active ({0})</value></data>
+  <data name="InitialStatus" xml:space="preserve"><value>Enter a playlist URL and download it.</value></data>
+  <data name="GroupAll" xml:space="preserve"><value>(All groups)</value></data>
+  <data name="NoGrouping" xml:space="preserve"><value>No grouping</value></data>
+  <data name="ChooseColumn" xml:space="preserve"><value>Select column</value></data>
+  <data name="GroupEpisodes" xml:space="preserve"><value>Group series</value></data>
+  <data name="CopyUrl" xml:space="preserve"><value>Copy URL</value></data>
+  <data name="SortOriginal" xml:space="preserve"><value>Original order</value></data>
+  <data name="SortNameAscending" xml:space="preserve"><value>Name A–Z</value></data>
+  <data name="SortNameDescending" xml:space="preserve"><value>Name Z–A</value></data>
+  <data name="SortTitleAscending" xml:space="preserve"><value>Title A–Z</value></data>
+  <data name="SortTitleDescending" xml:space="preserve"><value>Title Z–A</value></data>
+  <data name="SortGroupAscending" xml:space="preserve"><value>Group A–Z</value></data>
+  <data name="SortGroupDescending" xml:space="preserve"><value>Group Z–A</value></data>
+  <data name="SortIdAscending" xml:space="preserve"><value>TVG ID A–Z</value></data>
+  <data name="SortIdDescending" xml:space="preserve"><value>TVG ID Z–A</value></data>
+  <data name="SortUrlAscending" xml:space="preserve"><value>Stream URL A–Z</value></data>
+  <data name="SortUrlDescending" xml:space="preserve"><value>Stream URL Z–A</value></data>
+  <data name="InvalidUrlTitle" xml:space="preserve"><value>Invalid URL</value></data>
+  <data name="InvalidUrlMessage" xml:space="preserve"><value>Enter a valid HTTP or HTTPS URL.</value></data>
+  <data name="HttpsRequiredTitle" xml:space="preserve"><value>HTTPS required</value></data>
+  <data name="HttpsRequiredMessage" xml:space="preserve"><value>Google Play builds only allow secure HTTPS playlist and stream URLs.</value></data>
+  <data name="Downloading" xml:space="preserve"><value>Downloading playlist …</value></data>
+  <data name="LoadedStatus" xml:space="preserve"><value>Loaded: {0:N0} entries, {1:N0} groups.</value></data>
+  <data name="DownloadDuration" xml:space="preserve"><value> Duration: {0:0.00} s</value></data>
+  <data name="DownloadFailedTitle" xml:space="preserve"><value>Download failed</value></data>
+  <data name="DownloadFailedStatus" xml:space="preserve"><value>Download failed.</value></data>
+  <data name="DownloadFailedMessage" xml:space="preserve"><value>The playlist could not be downloaded.&#10;&#10;{0}</value></data>
+  <data name="DownloadTimeoutStatus" xml:space="preserve"><value>Download cancelled or timed out.</value></data>
+  <data name="DownloadTimeoutMessage" xml:space="preserve"><value>The download was cancelled or took too long.&#10;&#10;{0}</value></data>
+  <data name="ProcessingFailedStatus" xml:space="preserve"><value>The playlist could not be processed.</value></data>
+  <data name="ReadErrorTitle" xml:space="preserve"><value>Read error</value></data>
+  <data name="ReadErrorMessage" xml:space="preserve"><value>The playlist could not be read.&#10;&#10;{0}</value></data>
+  <data name="InvalidPlaylistTitle" xml:space="preserve"><value>Invalid playlist</value></data>
+  <data name="InvalidPlaylistMessage" xml:space="preserve"><value>The playlist contains invalid metadata.&#10;&#10;{0}</value></data>
+  <data name="ColumnName" xml:space="preserve"><value>Name</value></data>
+  <data name="ColumnTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ColumnGroup" xml:space="preserve"><value>Group</value></data>
+  <data name="ColumnId" xml:space="preserve"><value>TVG ID</value></data>
+  <data name="ColumnUrl" xml:space="preserve"><value>Stream URL</value></data>
+  <data name="ChooseColumnTitle" xml:space="preserve"><value>Select a column</value></data>
+  <data name="ChooseColumnMessage" xml:space="preserve"><value>Select a column before choosing filter values.</value></data>
+  <data name="NoFilterValuesTitle" xml:space="preserve"><value>No filter values</value></data>
+  <data name="NoFilterValuesMessage" xml:space="preserve"><value>Download a playlist with entries first.</value></data>
+  <data name="Filtering" xml:space="preserve"><value>Applying filters …</value></data>
+  <data name="VisibleEntries" xml:space="preserve"><value>{0:N0} of {1:N0} entries visible.</value></data>
+  <data name="EmptyValue" xml:space="preserve"><value>(Empty)</value></data>
+  <data name="InvalidStreamUrlTitle" xml:space="preserve"><value>Invalid stream URL</value></data>
+  <data name="InvalidStreamUrlMessage" xml:space="preserve"><value>This entry does not contain a valid absolute URL.</value></data>
+  <data name="PlaybackUnavailableTitle" xml:space="preserve"><value>Playback unavailable</value></data>
+  <data name="PlaybackUnavailableMessage" xml:space="preserve"><value>No compatible Android app was found for this stream.&#10;&#10;{0}</value></data>
+  <data name="PlaybackFailedTitle" xml:space="preserve"><value>Playback failed</value></data>
+  <data name="StreamOpened" xml:space="preserve"><value>Stream opened: {0}</value></data>
+  <data name="UrlCopied" xml:space="preserve"><value>Stream URL copied.</value></data>
+  <data name="ShareTitle" xml:space="preserve"><value>Share or save M3U playlist</value></data>
+  <data name="ShareUnavailableTitle" xml:space="preserve"><value>Sharing unavailable</value></data>
+  <data name="StorageErrorTitle" xml:space="preserve"><value>Storage error</value></data>
+  <data name="StorageErrorMessage" xml:space="preserve"><value>The playlist could not be prepared.&#10;&#10;{0}</value></data>
+  <data name="SeriesCollapsedDetail" xml:space="preserve"><value>Tap series to show or hide episodes.</value></data>
+  <data name="GroupedEntriesDetail" xml:space="preserve"><value>Grouped entries</value></data>
+  <data name="FilterSearchPlaceholder" xml:space="preserve"><value>Search values …</value></data>
+  <data name="FilterTitle" xml:space="preserve"><value>Filter: {0}</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
+  <data name="SelectNone" xml:space="preserve"><value>Select none</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+</root>

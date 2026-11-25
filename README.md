@@ -44,14 +44,30 @@ Die veröffentlichte EXE ist selbstständig ausführbar. Build-Ausgaben, lokale 
 
 ## Android-App
 
-Das Android-Projekt befindet sich unter `android` und unterstützt Suche, Gruppen- und Serienfilter, Spaltensortierung, Wertfilter, URL-Kopieren, externe Stream-Wiedergabe und das Teilen/Speichern der M3U-Datei. Es benötigt das .NET-10-Android-Workload sowie ein eingerichtetes Android-SDK und Java-JDK. Das Workload lässt sich mit `dotnet workload install maui-android` installieren.
+Das Android-Projekt befindet sich unter `android` und unterstützt Suche, Gruppen- und Serienfilter, Spaltensortierung, Wertfilter, URL-Kopieren, externe Stream-Wiedergabe und das Teilen/Speichern der M3U-Datei. Die Oberfläche folgt der Gerätesprache (Deutsch oder Englisch). Das Projekt benötigt das .NET-10-Android-Workload, Android SDK 36 und ein Java 17-JDK. Das Workload lässt sich mit `dotnet workload install maui-android` installieren.
 
 ```powershell
 dotnet build .\android\PlaylistViewer.Android.csproj -c Release
 dotnet publish .\android\PlaylistViewer.Android.csproj -c Release -p:AndroidPackageFormats=apk
 ```
 
-Auf Android wird die Stream-URL an eine installierte kompatible App übergeben. **M3U teilen/speichern** öffnet die Android-Teilen-Oberfläche, über die eine Speicher-App ausgewählt werden kann.
+Debug-Builds unterstützen HTTP für lokale Testserver. Release-Builds und die Google-Play-Version verlangen HTTPS für Playlists und Streams. HTTPS ist auch für private Server empfohlen, da HTTP Zugangsdaten und Tokens unverschlüsselt überträgt.
+
+Für den lokalen HTTPS-Server `192.168.0.47` akzeptiert die Android-App ein sonst ungültiges Zertifikat nur, wenn dessen SHA-256-Fingerabdruck exakt dem in `MainPage.cs` hinterlegten Pin entspricht. Bei einem Zertifikatswechsel muss dieser Pin aktualisiert werden; die Zertifikatsprüfung für andere Hosts bleibt unverändert.
+
+Die zuletzt eingegebene Playlist-URL wird lokal gespeichert, aber von Android-Cloud-Backups und Geräteübertragungen ausgeschlossen. Die App enthält keine Werbe- oder Analyse-SDKs. Beim Laden wird die URL an den vom Nutzer gewählten Playlist-Server gesendet; beim Abspielen wird die Stream-URL an eine installierte kompatible App übergeben. **M3U teilen/speichern** öffnet die Android-Teilen-Oberfläche.
+
+### Google Play Release
+
+Neue Apps und Updates müssen laut [Google Play Ziel-API-Vorgaben](https://support.google.com/googleplay/android-developer/answer/11926878) derzeit Android 16 / API 36 oder höher targeten. Das Projekt ist auf API 36 festgelegt und veröffentlicht für Google Play ein Android App Bundle (AAB):
+
+```powershell
+dotnet publish .\android\PlaylistViewer.Android.csproj -c Release -p:PublishProfile=GooglePlay
+```
+
+Das Profil verlangt ein eigenes Upload-Keystore. Vor dem Publish müssen diese Umgebungsvariablen gesetzt sein: `PLAY_STORE_KEYSTORE_PATH`, `PLAY_STORE_KEY_ALIAS`, `PLAY_STORE_STORE_PASSWORD` und `PLAY_STORE_KEY_PASSWORD`. Keystore und Passwörter nicht ins Repository einchecken. Die Paket-ID `com.ozgencaslan.playlistviewer` ist nach dem ersten Store-Upload unveränderlich; `ApplicationVersion` muss für jedes weitere Update erhöht werden.
+
+Vor der Einreichung müssen im Play Console-Konto außerdem ein öffentlich erreichbarer Datenschutztext samt URL, Entwicklerkontakt, Store-Einträge und Grafiken, Inhaltsfreigabe, Zielgruppe, Data-Safety-Angaben sowie die Test- und Review-Schritte vervollständigt werden. Diese konto- und inhaberspezifischen Angaben können nicht aus dem Quellcode erzeugt oder hier veröffentlicht werden.
 
 ## Versionshistorie
 

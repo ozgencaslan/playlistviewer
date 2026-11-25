@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <style name="Maui.MainTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <item name="colorSurface">#FFFFFF</item>
     <item name="android:windowLightStatusBar">true</item>
   </style>
 </resources>
