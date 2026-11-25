@@ -196,7 +196,13 @@ internal sealed class MainForm : Form
         groupComboBox.SelectedIndexChanged += (_, _) =>
         {
             if (!updatingGroups)
+            {
+                searchTextBox.Clear();
+                searchTimer.Stop();
+                columnFilters.Clear();
+                UpdateColumnHeaders();
                 ApplyFilters();
+            }
         };
         episodeGroupingCheckBox.CheckedChanged += (_, _) =>
         {
@@ -369,12 +375,6 @@ internal sealed class MainForm : Form
                 _ => string.Empty,
             };
         };
-        grid.CellDoubleClick += (_, e) =>
-        {
-            var displayIndex = currentPage * RowsPerPage + e.RowIndex;
-            if (e.RowIndex >= 0 && displayIndex < visibleRows.Count && visibleRows[displayIndex].Entry is not null)
-                CopySelectedUrl();
-        };
         grid.CellMouseClick += (_, e) =>
         {
             if (e.RowIndex == -1 && e.ColumnIndex >= 0 && e.Button is MouseButtons.Left or MouseButtons.Right)
@@ -382,9 +382,14 @@ internal sealed class MainForm : Form
             else if (e.RowIndex >= 0 && e.Button == MouseButtons.Left && e.Clicks == 1)
             {
                 var displayIndex = currentPage * RowsPerPage + e.RowIndex;
-                if (displayIndex < visibleRows.Count &&
-                    visibleRows[displayIndex] is { IsEpisodeGroup: true, EpisodeGroupKey: { } series })
-                    ToggleEpisodeGroup(series);
+                if (displayIndex < visibleRows.Count)
+                {
+                    var row = visibleRows[displayIndex];
+                    if (row is { IsEpisodeGroup: true, EpisodeGroupKey: { } series })
+                        ToggleEpisodeGroup(series);
+                    else if (row.Entry is { } entry)
+                        PlayStreamUrl(entry);
+                }
             }
         };
         grid.CellFormatting += (_, e) =>
@@ -1238,6 +1243,46 @@ internal sealed class MainForm : Form
         Clipboard.SetText(entry.Url);
         statusLabel.Text = "Stream-URL in die Zwischenablage kopiert.";
         MarkOperationCompleted("URL kopiert", TimeSpan.Zero);
+    }
+
+    private void PlayStreamUrl(M3uEntry entry)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = FindVlcExecutable(),
+            UseShellExecute = false,
+        };
+        startInfo.ArgumentList.Add(entry.Url);
+
+        try
+        {
+            using var player = Process.Start(startInfo)
+                ?? throw new InvalidOperationException("VLC konnte nicht gestartet werden.");
+            statusLabel.Text = $"Wiedergabe in VLC gestartet: {entry.Name}";
+            MarkOperationCompleted("VLC gestartet", TimeSpan.Zero);
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            statusLabel.Text = "VLC konnte nicht gestartet werden.";
+            MessageBox.Show(this,
+                $"Die Stream-URL konnte nicht in VLC geöffnet werden. Prüfe, ob VLC installiert ist und über den Befehl „vlc.exe“ gefunden werden kann.\n\n{ex.Message}",
+                "VLC konnte nicht gestartet werden", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MarkOperationCompleted("VLC-Start fehlgeschlagen", TimeSpan.Zero);
+        }
+    }
+
+    private static string FindVlcExecutable()
+    {
+        const string relativePath = "VideoLAN\\VLC\\vlc.exe";
+        var executable = new[]
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+        }
+            .Select(directory => Path.Combine(directory, relativePath))
+            .FirstOrDefault(File.Exists);
+
+        return executable ?? "vlc.exe";
     }
 
     private sealed class ValueFilterForm : Form

@@ -12,6 +12,8 @@ Eine Windows-Desktop-App zum Herunterladen, Durchsuchen und Organisieren von M3U
 - Die zuletzt erfolgreich geladene URL beim nächsten Start wiederherstellen.
 - Einträge nach Name, Titel, Gruppe, TVG-ID oder Stream-URL durchsuchen.
 - Spaltenwerte filtern, sortieren und gruppieren.
+- Beim Auswählen einer Gruppe in der Gruppen-Combobox werden Suche und andere Filter zurückgesetzt, damit alle Einträge der Gruppe angezeigt werden.
+- Ein Klick auf einen Playlist-Eintrag öffnet dessen Stream-URL in VLC. VLC muss installiert sein (Standard-Installationspfad oder über `vlc.exe` im `PATH` erreichbar).
 - Große Ergebnislisten mit bis zu 2.000 Zeilen pro Seite anzeigen.
 - Episoden wie `Peacemaker s01 e01` unter einer Serienzusammenfassung gruppieren. Gruppen sind anfangs eingeklappt; die Zusammenfassung klappt die Folgen ein oder aus.
 - Stream-URLs kopieren und die heruntergeladene Original-Playlist lokal speichern.
@@ -25,7 +27,7 @@ Die eigenständige Windows-x64-Version liegt unter `publish\PlaylistViewer.exe`.
 2. Über das Suchfeld, den Gruppenfilter oder die Filtermenüs der Tabellenköpfe die Einträge einschränken.
 3. Für Serien die Checkbox **Serien gruppieren** aktivieren. Auf eine Serienzusammenfassung klicken, um ihre Episoden ein- oder auszublenden.
 4. Bei mehreren Ergebnisseiten über die Pfeile in der Statusleiste navigieren.
-5. Eine Stream-URL durch Doppelklick oder über das Kontextmenü kopieren. Über **M3U speichern** die Originaldatei lokal ablegen.
+5. Einen Eintrag anklicken, um den Stream in VLC abzuspielen. Die Stream-URL lässt sich über das Kontextmenü oder **Strg+C** kopieren. Über **M3U speichern** die Originaldatei lokal ablegen.
 
 Die zuletzt erfolgreich geladene URL wird unter `%LOCALAPPDATA%\PlaylistViewer\last-playlist-url.txt` gespeichert. Falls die URL Zugangsdaten oder einen privaten Token enthält, sollte sie nicht öffentlich geteilt werden.
 
